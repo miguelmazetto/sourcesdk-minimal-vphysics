@@ -185,9 +185,9 @@ public:
 	// produce a convex element from planes (csg of planes)
 	virtual CPhysConvex		*ConvexFromPlanes( float *pPlanes, int planeCount, float mergeDistance ) = 0;
 	// calculate volume of a convex element
-	virtual float			ConvexVolume( CPhysConvex *pConvex ) = 0;
+	virtual double			ConvexVolume( CPhysConvex *pConvex ) = 0;
 
-	virtual float			ConvexSurfaceArea( CPhysConvex *pConvex ) = 0;
+	virtual double			ConvexSurfaceArea( CPhysConvex *pConvex ) = 0;
 	// store game-specific data in a convex solid
 	virtual void			SetConvexGameData( CPhysConvex *pConvex, unsigned int gameData ) = 0;
 	// If not converted, free the convex elements with this call
@@ -222,9 +222,9 @@ public:
 	virtual CPhysCollide	*UnserializeCollide( char *pBuffer, int size, int index ) = 0;
 
 	// compute the volume of a collide
-	virtual float			CollideVolume( CPhysCollide *pCollide ) = 0;
+	virtual double			CollideVolume( CPhysCollide *pCollide ) = 0;
 	// compute surface area for tools
-	virtual float			CollideSurfaceArea( CPhysCollide *pCollide ) = 0;
+	virtual double			CollideSurfaceArea( CPhysCollide *pCollide ) = 0;
 
 	// Get the support map for a collide in the given direction
 	virtual Vector			CollideGetExtent( const CPhysCollide *pCollide, const Vector &collideOrigin, const QAngle &collideAngles, const Vector &direction ) = 0;
@@ -771,13 +771,13 @@ public:
 	virtual void			RecheckCollisionFilter() = 0;
 	// NOTE: Contact points aren't updated when collision rules change, call this to force an update
 	// UNDONE: Force this in RecheckCollisionFilter() ?
-	virtual void			RecheckContactPoints( bool bSearchForNewContacts = false ) = 0;
+	virtual void			RecheckContactPoints( void ) = 0;
 
 	// mass accessors
 	virtual void			SetMass( float mass ) = 0;
-	virtual float			GetMass( void ) const = 0;
+	virtual double			GetMass( void ) const = 0;
 	// get 1/mass (it's cached)
-	virtual float			GetInvMass( void ) const = 0;
+	virtual double			GetInvMass( void ) const = 0;
 	virtual Vector			GetInertia( void ) const = 0;
 	virtual Vector			GetInvInertia( void ) const = 0;
 	virtual void			SetInertia( const Vector &inertia ) = 0;
@@ -798,9 +798,9 @@ public:
 	virtual void			SetContents( unsigned int contents ) = 0;
 
 	// Get the radius if this is a sphere object (zero if this is a polygonal mesh)
-	virtual float			GetSphereRadius() const = 0;
+	virtual double			GetSphereRadius() const = 0;
 	// Set the radius on a sphere. May need to force recalculation of contact points
-	virtual void			SetSphereRadius(float radius) = 0;
+	virtual void			SetSphereRadius(float radius) = 0; // mmz: TODO SetSphereRadius does not exist in gmod, this function is here just to offset the vtable, todo: discover what function is missing
 	virtual float			GetEnergy() const = 0;
 	virtual Vector			GetMassCenterLocalSpace() const = 0;
 
@@ -853,7 +853,7 @@ public:
 	// Calculates the linear/angular velocities on the center of mass for an offset force impulse (pass output to AddVelocity)
 	virtual void			CalculateVelocityOffset( const Vector &forceVector, const Vector &worldPosition, Vector *centerVelocity, AngularImpulse *centerAngularVelocity ) const = 0;
 	// calculate drag scale
-	virtual float			CalculateLinearDrag( const Vector &unitDirection ) const = 0;
+	virtual double			CalculateLinearDrag( const Vector &unitDirection ) const = 0;
 	virtual float			CalculateAngularDrag( const Vector &objectSpaceRotationAxis ) const = 0;
 
 	// returns true if the object is in contact with another object
@@ -1070,8 +1070,14 @@ public:
 
 	// NOTE: Same as GetPhysicsProperties, but maybe more convenient
 	virtual void	GetPhysicsParameters( int surfaceDataIndex, surfacephysicsparams_t *pParamsOut ) const = 0;
-
-	virtual ISaveRestoreOps* GetMaterialIndexDataOps() const = 0;
+	
+	// Josh: Unknown GMod specific stuff.
+	// VTable information taken from OSX vphysics.dylib with symbols with IDA.
+	virtual IVP_Material	*GetIVPMaterial( int nIndex ) = 0;
+	virtual int				GetIVPMaterialIndex( const IVP_Material *pMaterial ) const = 0;
+	virtual IVP_Material_Manager *GetIVPManager( void ) = 0;
+	virtual int				RemapIVPMaterialIndex( int nIndex ) const = 0;
+	virtual const char 		*GetReservedMaterialName( int nMaterialIndex ) const = 0;
 };
 
 abstract_class IPhysicsFluidController
@@ -1083,7 +1089,7 @@ public:
 	virtual void	*GetGameData( void ) const = 0;
 
 	virtual void	GetSurfacePlane( Vector *pNormal, float *pDist ) const = 0;
-	virtual float	GetDensity() const = 0;
+	virtual double	GetDensity() const = 0;
 	virtual void	WakeAllSleepingObjects() = 0;
 	virtual int		GetContents() const = 0;
 };

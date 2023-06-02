@@ -19,6 +19,7 @@ struct solid_t
 	char	name[512];
 	char	parent[512];
 	char	surfaceprop[512];
+	float   mysterious_val;
 	Vector	massCenterOverride;
 	objectparams_t params;
 };
